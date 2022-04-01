@@ -235,4 +235,16 @@ app.delete('/delete/:idTodo', (req, res) => {
     })
 })
 
+// Login
+//  -> 1. Cek datanya -> SELECT
+//  -> 2. Kalo datanya ada, kirim id -> frontend
+
+// Register
+//  -> 1. Cek datanya, apakah email/phone number sudah terdaftar belum -> SELECT
+//  -> 2. Kalo datanya ada, kirim response error
+//  -> 3. Kalo datanya tidak ada, kirim datanya -> INSERT
+
+// Get Post
+//  -> 
+
 app.listen(PORT, () => console.log('API Running on PORT ' + PORT) )
