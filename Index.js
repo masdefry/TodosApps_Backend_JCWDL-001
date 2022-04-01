@@ -75,4 +75,83 @@ app.post('/create', (req, res) => {
     }
 })
 
+// Read
+// Read Only
+app.get('/get', (req, res) => {
+    const sqlQuery = 'SELECT * FROM todos'
+
+    db.query(sqlQuery, (err, result) => {
+        try {
+            if(err) throw err 
+
+            res.status(200).send({
+                status: 200,
+                error: false, 
+                message: 'Get Data Success!',
+                data: result
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
+// Read with Params
+app.get('/get/:idUser', (req, res) => {
+    let id = req.params.idUser 
+    
+    const sqlQuery = 'SELECT * FROM todos AS t JOIN users AS u ON t.users_id = u.id WHERE u.id = ?'
+
+    db.query(sqlQuery, id, (err, result) => {
+        try {
+            if(err) throw err
+            
+            if(result.length > 0){
+                res.status(201).send({
+                    status: 201,
+                    error: false, 
+                    message: 'Get Data Success!',
+                    data: result
+                })
+            }else{
+                res.status(201).send({
+                    status: 201,
+                    error: true,
+                    message: 'Data User with Id = ' + id + ' Not Found!'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
+// Read with Query Params
+app.get('/getByStatusId', (req, res) => {
+    const statusId = req.query.statusId
+    
+    const sqlQuery = 'SELECT * FROM todos WHERE status = ?'
+
+    db.query(sqlQuery, statusId, (err, result) => {
+        try {
+            if(err) throw err
+
+            if(result.length > 0){
+                res.status(200).send({
+                    status: 200, 
+                    error: false, 
+                    message: 'Filter Data Success!',
+                    data: result
+                })
+            }else{
+                res.status(201).send({
+                    status: 201,
+                    error: true,
+                    message: 'Data Todos with Status Id = ' + statusId + ' Not Found!'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
+
 app.listen(PORT, () => console.log('API Running on PORT ' + PORT) )
