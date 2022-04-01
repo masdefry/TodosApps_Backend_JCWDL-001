@@ -154,4 +154,85 @@ app.get('/getByStatusId', (req, res) => {
     })
 })
 
+// Update
+app.patch('/udpdate/:idTodo', (req, res) => {
+    const idTodo = req.params.idTodo 
+    const data = req.body
+
+    const sqlQuery = 'SELECT * FROM todos WHERE id = ?'
+
+    db.query(sqlQuery, idTodo, (err, result) => {
+        try {
+            if(err) throw err 
+
+            if(result.length > 0){
+                // Lakukan update data
+                const sqlQuery1 = 'UPDATE todos SET ? WHERE id = ?'
+
+                db.query(sqlQuery1, [data, idTodo], (err1, result1) => {
+                    try {
+                        if(err1) throw err1 
+
+                        res.status(201).send({
+                            status: 201,
+                            error: false, 
+                            message: 'Update Data Success!'
+                        })
+                    } catch (error) {
+                        console.log(error)
+                    }
+                })
+            }else{
+                // Response error
+                res.status(400).send({
+                    status: 400, 
+                    error: true, 
+                    message: 'Todo with Id = ' + idTodo + ' Not Found!'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
+
+// Delete
+app.delete('/delete/:idTodo', (req, res) => {
+    const idTodo = req.params.idTodo 
+    
+    const sqlQuery = 'SELECT * FROM todos WHERE id = ?'
+
+    db.query(sqlQuery, idTodo, (err, result) => {
+        try {
+            if(err) throw err
+            
+            if(result.length > 0){
+                const sqlQuery1 = 'DELETE FROM todos WHERE id = ?'
+
+                db.query(sqlQuery1, idTodo, (err1, result1) => {
+                    try {
+                        if(err1) throw err1
+                        
+                        res.status(201).send({
+                            status: 201, 
+                            error: false, 
+                            message: 'Delete Data Success!'
+                        })
+                    } catch (error) {
+                        console.log(error)
+                    }
+                })
+            }else{
+                res.status(400).send({
+                    status: 400, 
+                    error: true, 
+                    message: 'Todo with Id = ' + idTodo + ' Not Found!'
+                })
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    })
+})
+
 app.listen(PORT, () => console.log('API Running on PORT ' + PORT) )
