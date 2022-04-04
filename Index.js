@@ -16,6 +16,8 @@ app.use(cors()) // Kita memberikan izin ke semua client
 //     origin: 'http://localhost:3000'
 // }))
 
+const db = require('./Connection/Connection')
+
 // Import Routers
 const TodosRouters = require('./Routers/TodosRouters')
 app.use('/todos', TodosRouters)
