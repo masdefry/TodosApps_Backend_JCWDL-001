@@ -7,7 +7,7 @@ const create = (req, res) => {
         const data = req.body 
 
         // Step1.2 Validasi data
-        if(!data.todo || !data.description || !data.status_id || !data.users_id) throw {
+        if(!data.todo || !data.description || !data.users_id) throw {
             status: 400,
             error: true, 
             message: 'Data Not Completed!'
@@ -25,11 +25,11 @@ const create = (req, res) => {
 
                 const sqlQueryEvent = `
                     CREATE EVENT Update_Status_Data_${result.insertId}
-                    ON SCHEDULE AT '${data.deadline}'
+                    ON SCHEDULE AT '${data.deadline}' 
                     DO UPDATE todos SET status_id = 2
                     WHERE id = ${result.insertId}
                 `
-
+                
                 db.query(sqlQueryEvent, (errEvent, resultEvent) => {
                     try {
                         if(errEvent) throw errEvent 
