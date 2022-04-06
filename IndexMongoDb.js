@@ -75,7 +75,10 @@ app.post('/mongodb/create', (req, res) => {
         // Save Data Menuju MongoDb
         newTodo.save()
         .then((result) => {
-            console.log(result)
+            res.status(200).send({
+                error: false, 
+                message: 'Create Data Success!'
+            })
         })
         
     } catch (error) {
@@ -85,6 +88,94 @@ app.post('/mongodb/create', (req, res) => {
             message: error.message
         })
     }
+})
+
+// Read
+// Get All Data
+app.get('/mongodb/get', (req, res) => {
+    todos.find()
+    .then((result) => {
+        res.status(200).send({
+            error: false, 
+            message: 'Get Data Success!',
+            data: result
+        })
+    })
+    .catch((error) => {
+        res.status(500).send({
+            error: true, 
+            message: error.message
+        })
+    })
+})
+
+// Get Data by Id
+app.get('/mongodb/getById/:idUser', (req, res) => {
+    todos.findOne({ users_id: `${req.params.idUser}` })
+    .then((result) => {
+        if(result == null){
+            // Response Bahwa Id Tidak Ditemukan / Data Tidak Ada
+            res.status(200).send({
+                error: false, 
+                message: 'Get Data Failed! Data Not Found / Id Not Found!',
+                data: result
+            })
+        }else{
+            res.status(200).send({
+                error: false, 
+                message: 'Get Data Success!',
+                data: result
+            })
+        }
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+// Update
+app.patch('/mongodb/update/:idUser', (req, res) => {
+    console.log(req.params.idUser)
+    todos.findOneAndUpdate({users_id: `${req.params.idUser}`}, req.body)
+    .then((result) => {
+        if(result == null){
+            // Response Bahwa Id Tidak Ditemukan / Data Tidak Ada
+            res.status(200).send({
+                error: false, 
+                message: 'Update Data Failed! Data Not Found / Id Not Found!'
+            })
+        }else{
+            res.status(200).send({
+                error: false, 
+                message: 'Update Data Success!'
+            })
+        }
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+// Delete
+app.delete('/mongodb/delete/:idTodo', (req, res) => {
+    todos.findByIdAndDelete(`${req.params.idTodo}`)
+    .then((result) => {
+        if(result == null){
+            // Response Bahwa Id Tidak Ditemukan / Data Tidak Ada
+            res.status(200).send({
+                error: false, 
+                message: 'Delete Data Failed! Data Not Found / Id Not Found!',
+            })
+        }else{
+            res.status(200).send({
+                error: false, 
+                message: 'Delete Data Success!',
+            })
+        }
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 })
 
 app.get('/', (req, res) => {
