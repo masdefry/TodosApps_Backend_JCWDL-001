@@ -9,6 +9,12 @@ const validator = require('validator')
 // Import Crypto 
 const crypto = require('crypto')
 
+// Import Transporter Nodemailer
+const transporter = require('./../Helpers/Transporter')
+
+const fs = require('fs')
+const handlebars = require('handlebars')
+
 module.exports = {
     register: async(req, res) => {
         try {
@@ -43,13 +49,35 @@ module.exports = {
             throw error
         })
 
-        res.status(200).send({
-            error: false, 
-            message: 'Register Success!'
-        })
         // Step5. Send Email Confirmation
+        fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
+            encoding: 'utf-8'}, (err, file) => {
+                if(err) throw err 
+
+                const newTemplate = handlebars.compile(file)
+                const newTemplateResult = newTemplate({bebas: data.email})
+
+                transporter.sendMail({
+                    from: 'masdefry', // Sender Address 
+                    to: 'ryan.fandy@gmail.com', // Email User
+                    subject: 'Email Confirmation',
+                    html: newTemplateResult
+                })
+                .then((response) => {
+                    res.status(200).send({
+                        error: false, 
+                        message: 'Register Success! Check Email to Verified Account!'
+                    })
+                })
+                .catch((error) => {
+                    res.status(500).send({
+                        error: false, 
+                        message: error.message
+                    })
+                })
+            })
         } catch (error) {
-            res.status(400).send({
+            res.status(500).send({
                 error: true, 
                 message: error.message
             })
