@@ -22,6 +22,9 @@ const db = require('./Connection/Connection')
 const TodosRouters = require('./Routers/TodosRouters')
 app.use('/todos', TodosRouters)
 
+const UserRouters = require('./Routers/UserRouter')
+app.use('/user', UserRouters)
+
 // Read with Params
 app.get('/get/:idUser', (req, res) => {
     let id = req.params.idUser 
