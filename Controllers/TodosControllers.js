@@ -5,6 +5,8 @@ const create = (req, res) => {
     try {
         // Step1.1. Menerima req.body dari frontend
         const data = req.body 
+        const id = req.dataToken.id 
+        data.users_id = id
 
         // Step1.2 Validasi data
         if(!data.todo || !data.description || !data.users_id) throw {
@@ -67,9 +69,11 @@ const create = (req, res) => {
 
 const getAllData = (req, res) => {
     try {
-        const sqlQuery = 'SELECT * FROM todos'
+        let id = req.dataToken.id
 
-        db.query(sqlQuery, (err, result) => {
+        const sqlQuery = 'SELECT * FROM todos WHERE users_id = ?'
+
+        db.query(sqlQuery, id, (err, result) => {
             try {
                 if(err) throw err 
 

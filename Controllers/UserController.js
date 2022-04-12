@@ -15,6 +15,9 @@ const transporter = require('./../Helpers/Transporter')
 const fs = require('fs')
 const handlebars = require('handlebars')
 
+// Import JWT Token
+const jwt = require('jsonwebtoken')
+
 module.exports = {
     register: async(req, res) => {
         try {
@@ -91,10 +94,8 @@ module.exports = {
 
     confirmation: (req, res) => {
         // Step1. Get id
-        console.log(req.body)
         const id = req.body.id 
         const code_activation = req.body.code_activation
-        console.log(code_activation)
 
         // Step2.0. Check, apakah user melakukan aktivasi via link atau menggunakan activation code
         if(code_activation !== undefined){ // Apablia aktivasi menggunakan code
@@ -169,5 +170,78 @@ module.exports = {
                 }
             })
         }
+    },
+
+    login: (req, res) => {
+        try {
+            const data = req.body 
+
+            if(!data.email || !data.password) throw { message: 'Data Not Complete!' }
+
+            const hmac = crypto.createHmac('sha256', 'abc123')
+            hmac.update(data.password)
+            const passwordHashed = hmac.digest('hex')
+            data.password = passwordHashed
+
+            db.query('SELECT * FROM users WHERE email = ? AND password = ?', [data.email, data.password], (err, result) => {
+                try {
+                    if(err) throw error 
+
+                    if(result.length === 1){
+                        jwt.sign({id: result[0].id}, '123abc', (err, token) => {
+                            try {
+                                if(err) throw err
+
+                                res.status(200).send({
+                                    error: false, 
+                                    message: 'Login Success',
+                                    token: token
+                                })
+                            } catch (error) {
+                                res.status(500).send({
+                                    error: true, 
+                                    message: error.message
+                                })
+                            }
+                        })
+                    }else{
+                        res.status(200).send({
+                            error: true, 
+                            message: 'Account Not Found!'
+                        })
+                    }
+                } catch (error) {
+                    res.status(500).send({
+                        error: true, 
+                        message: error.message
+                    })
+                }
+            })
+        } catch (error) {
+            res.status(500).send({
+                error: true, 
+                message: error.message
+            })
+        }
+    },
+
+    checkUserVerify: (req, res) => {
+        let id = req.dataToken.id
+        
+        db.query('SELECT * FROM users WHERE id = ?', id, (err, result) => {
+            try {
+                if(err) throw err 
+                
+                res.status(200).send({
+                    error: false, 
+                    is_confirmed: result[0].is_confirmed
+                })
+            } catch (error) {
+                res.status(500).send({
+                    error: true, 
+                    message: error.message
+                })
+            }
+        })
     }
 }
