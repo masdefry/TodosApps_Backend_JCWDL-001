@@ -6,5 +6,6 @@ const Router = express.Router()
 const UserController = require('./../Controllers/UserController')
 
 Router.post('/register', UserController.register)
+Router.patch('/confirmation', UserController.confirmation)
 
 module.exports = Router
