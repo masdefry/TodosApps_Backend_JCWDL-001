@@ -9,7 +9,7 @@ const UserController = require('./../Controllers/UserController')
 const jwtVerify = require('./../Middleware/JWT')
 
 Router.post('/register', UserController.register)
-Router.patch('/confirmation', UserController.confirmation)
+Router.patch('/confirmation', jwtVerify, UserController.confirmation)
 Router.post('/login', UserController.login)
 Router.post('/checkuserverify', jwtVerify, UserController.checkUserVerify)
 

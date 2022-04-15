@@ -57,32 +57,43 @@ module.exports = {
                 throw error
             })
 
-            // Step5. Send Email Confirmation
-            fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
-                encoding: 'utf-8'}, (err, file) => {
-                    if(err) throw err 
+            jwt.sign({id: insertUser.insertId}, '123abc', (err, token) => {
+                try {
+                    if(err) throw err
 
-                    const newTemplate = handlebars.compile(file)
-                    const newTemplateResult = newTemplate({bebas: data.email, link:`http://localhost:3000/confirmation/${insertUser.insertId}`, code_activation: code_activation, link_activation_code: `http://localhost:3000/confirmationcode/${insertUser.insertId}`})
+                    // Step5. Send Email Confirmation
+                    fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
+                        encoding: 'utf-8'}, (err, file) => {
+                            if(err) throw err 
 
-                    transporter.sendMail({
-                        from: 'masdefry', // Sender Address 
-                        to: 'ryan.fandy@gmail.com', // Email User
-                        subject: 'Email Confirmation',
-                        html: newTemplateResult
+                            const newTemplate = handlebars.compile(file)
+                            const newTemplateResult = newTemplate({bebas: data.email, link:`http://localhost:3000/confirmation/${token}`, code_activation: code_activation, link_activation_code: `http://localhost:3000/confirmationcode/${insertUser.insertId}`})
+
+                            transporter.sendMail({
+                                from: 'masdefry', // Sender Address 
+                                to: 'ryan.fandy@gmail.com', // Email User
+                                subject: 'Email Confirmation',
+                                html: newTemplateResult
+                            })
+                            .then((response) => {
+                                res.status(200).send({
+                                    error: false, 
+                                    message: 'Register Success! Check Email to Verified Account!'
+                                })
+                            })
+                            .catch((error) => {
+                                res.status(500).send({
+                                    error: false, 
+                                    message: error.message
+                                })
+                            })
                     })
-                    .then((response) => {
-                        res.status(200).send({
-                            error: false, 
-                            message: 'Register Success! Check Email to Verified Account!'
-                        })
+                } catch (error) {
+                    res.status(500).send({
+                        error: true, 
+                        message: error.message
                     })
-                    .catch((error) => {
-                        res.status(500).send({
-                            error: false, 
-                            message: error.message
-                        })
-                    })
+                }
             })
         } catch (error) {
             res.status(500).send({
@@ -94,7 +105,7 @@ module.exports = {
 
     confirmation: (req, res) => {
         // Step1. Get id
-        const id = req.body.id 
+        const id = req.dataToken.id 
         const code_activation = req.body.code_activation
 
         // Step2.0. Check, apakah user melakukan aktivasi via link atau menggunakan activation code
