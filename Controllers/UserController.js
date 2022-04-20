@@ -61,32 +61,45 @@ module.exports = {
                 try {
                     if(err) throw err
 
-                    // Step5. Send Email Confirmation
-                    fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
-                        encoding: 'utf-8'}, (err, file) => {
-                            if(err) throw err 
+                    // Step5.0. Save Token to Db
+                    let query3 = 'UPDATE users SET token = ? WHERE id = ?'
+                    db.query(query3, [token, insertUser.insertId], (err1, result1) => {
+                        try {
+                            if(err1) throw err1
 
-                            const newTemplate = handlebars.compile(file)
-                            const newTemplateResult = newTemplate({bebas: data.email, link:`http://localhost:3000/confirmation/${token}`, code_activation: code_activation, link_activation_code: `http://localhost:3000/confirmationcode/${insertUser.insertId}`})
+                            // Step5.1. Send Email Confirmation
+                            fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
+                                encoding: 'utf-8'}, (err, file) => {
+                                    if(err) throw err 
 
-                            transporter.sendMail({
-                                from: 'masdefry', // Sender Address 
-                                to: 'ryan.fandy@gmail.com', // Email User
-                                subject: 'Email Confirmation',
-                                html: newTemplateResult
+                                    const newTemplate = handlebars.compile(file)
+                                    const newTemplateResult = newTemplate({bebas: data.email, link:`http://localhost:3000/confirmation/${token}`, code_activation: code_activation, link_activation_code: `http://localhost:3000/confirmationcode/${insertUser.insertId}`})
+
+                                    transporter.sendMail({
+                                        from: 'masdefry', // Sender Address 
+                                        to: 'ryan.fandy@gmail.com', // Email User
+                                        subject: 'Email Confirmation',
+                                        html: newTemplateResult
+                                    })
+                                    .then((response) => {
+                                        res.status(200).send({
+                                            error: false, 
+                                            message: 'Register Success! Check Email to Verified Account!'
+                                        })
+                                    })
+                                    .catch((error) => {
+                                        res.status(500).send({
+                                            error: false, 
+                                            message: error.message
+                                        })
+                                    })
                             })
-                            .then((response) => {
-                                res.status(200).send({
-                                    error: false, 
-                                    message: 'Register Success! Check Email to Verified Account!'
-                                })
+                        } catch (error) {
+                            res.status(500).send({
+                                error: true, 
+                                message: error.message
                             })
-                            .catch((error) => {
-                                res.status(500).send({
-                                    error: false, 
-                                    message: error.message
-                                })
-                            })
+                        }
                     })
                 } catch (error) {
                     res.status(500).send({
@@ -203,10 +216,18 @@ module.exports = {
                             try {
                                 if(err) throw err
 
-                                res.status(200).send({
-                                    error: false, 
-                                    message: 'Login Success',
-                                    token: token
+                                db.query('UPDATE users SET token = ?', token, (err1, result1) => {
+                                    try {
+                                        if(err1) throw err1 
+
+                                        res.status(200).send({
+                                            error: false, 
+                                            message: 'Login Success',
+                                            token: token
+                                        })
+                                    } catch (error) {
+                                        console.log(error)
+                                    }
                                 })
                             } catch (error) {
                                 res.status(500).send({
@@ -252,6 +273,81 @@ module.exports = {
                     error: true, 
                     message: error.message
                 })
+            }
+        })
+    },
+
+    resend: (req, res) => {
+
+        let id = req.dataToken.id 
+
+        // Step0. Make sure bahwa id user itu ada
+        db.query('SELECT * FROM users WHERE id = ?', id, (err, result) => {
+            try {
+                if(err) throw err
+
+                if(result.length === 1){
+                    // Step1. Get Email dari user id tersebut 
+                    let email = result[0].email
+                    let code_activation = result[0].code_activation
+
+                    // Step2. Resend Email Confirmationnya
+                    jwt.sign({id: id}, '123abc', (err, token) => {
+                        try {
+                            if(err) throw err
+        
+                            // Step5.0. Save Token to Db
+                            let query3 = 'UPDATE users SET token = ? WHERE id = ?'
+                            db.query(query3, [token, id], (err1, result1) => {
+                                try {
+                                    if(err1) throw err1
+        
+                                    // Step5.1. Send Email Confirmation
+                                    fs.readFile('D:/Workspace/Class/JCWDL-001/Backend/TodosApps/Public/Template/index.html', {
+                                        encoding: 'utf-8'}, (err, file) => {
+                                            if(err) throw err 
+        
+                                            const newTemplate = handlebars.compile(file)
+                                            const newTemplateResult = newTemplate({bebas: email, link:`http://localhost:3000/confirmation/${token}`, code_activation: code_activation, link_activation_code: `http://localhost:3000/confirmationcode/${token}`})
+        
+                                            transporter.sendMail({
+                                                from: 'masdefry', // Sender Address 
+                                                to: 'ryan.fandy@gmail.com', // Email User
+                                                subject: 'Email Confirmation',
+                                                html: newTemplateResult
+                                            })
+                                            .then((response) => {
+                                                res.status(200).send({
+                                                    error: false, 
+                                                    message: 'Register Success! Check Email to Verified Account!'
+                                                })
+                                            })
+                                            .catch((error) => {
+                                                res.status(500).send({
+                                                    error: false, 
+                                                    message: error.message
+                                                })
+                                            })
+                                    })
+                                } catch (error) {
+                                    res.status(500).send({
+                                        error: true, 
+                                        message: error.message
+                                    })
+                                }
+                            })
+                        } catch (error) {
+                            res.status(500).send({
+                                error: true, 
+                                message: error.message
+                            })
+                        }
+                    })
+                }else{
+                    // Kirim message error, bahwa id tidak ditemukan
+                }
+            } catch (error) {
+                console.log(error)                
             }
         })
     }

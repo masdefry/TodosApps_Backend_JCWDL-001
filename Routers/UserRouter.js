@@ -12,5 +12,6 @@ Router.post('/register', UserController.register)
 Router.patch('/confirmation', jwtVerify, UserController.confirmation)
 Router.post('/login', UserController.login)
 Router.post('/checkuserverify', jwtVerify, UserController.checkUserVerify)
+Router.post('/resend', jwtVerify, UserController.resend)
 
 module.exports = Router
