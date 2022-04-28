@@ -169,20 +169,36 @@ module.exports = {
                             message: 'Id Not Found / Email Already Active'
                         })
                     }else{
-                        // Step3. Apabila is_confirmed = 0, update menjadi = 1
-                        db.query('UPDATE users SET is_confirmed = 1 WHERE id = ?', id, (err1, result1) => {
+                        // Step3. Check, apakah tokennya itu sama dengan yg disimpan didalam database
+                        db.query('SELECT token FROM users WHERE token = ?', req.headers.authorization, (err, result) => {
                             try {
                                 if(err) throw err 
 
-                                res.status(200).send({
-                                    error: false, 
-                                    message: 'Your Account Active!'
-                                })
+                                if(result.length === 0){
+                                    res.status(400).send({
+                                        error: true, 
+                                        message: 'Token Deactived'
+                                    })
+                                }else{
+                                    // Step3. Apabila is_confirmed = 0, update menjadi = 1
+                                    db.query('UPDATE users SET is_confirmed = 1 WHERE id = ?', id, (err1, result1) => {
+                                        try {
+                                            if(err) throw err 
+
+                                            res.status(200).send({
+                                                error: false, 
+                                                message: 'Your Account Active!'
+                                            })
+                                        } catch (error) {
+                                            res.status(500).send({
+                                                error: true, 
+                                                message: error.message
+                                            })
+                                        }
+                                    })
+                                }
                             } catch (error) {
-                                res.status(500).send({
-                                    error: true, 
-                                    message: error.message
-                                })
+                                console.log(error)
                             }
                         })
                     }
@@ -216,10 +232,11 @@ module.exports = {
                             try {
                                 if(err) throw err
 
-                                db.query('UPDATE users SET token = ?', token, (err1, result1) => {
+                                db.query('UPDATE users SET token = ? WHERE id = ?', [token, result[0].id], (err1, result1) => {
                                     try {
                                         if(err1) throw err1 
-
+                                        console.log(token)
+                                        console.log(result1)
                                         res.status(200).send({
                                             error: false, 
                                             message: 'Login Success',
